@@ -2,9 +2,10 @@
   "name": "opera-america-member-scraper",
   "version": "1.0.0",
   "description": "",
-  "main": "src/index.ts",
+  "main": "",
   "scripts": {
-    "scrape": "ts-node src/index.ts",
+    "scrape-orgs": "ts-node src/org-scraper/index.ts",
+    "scrape-org-pages": "ts-node src/org-page-scaper/index.ts",
     "lint": "eslint src/*.ts",
     "lint-fix": "eslint --fix src/*.ts"
   },

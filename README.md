@@ -6,3 +6,7 @@ This script scrapes organization data from [OPERA America](https://www.operaamer
 
 - TypeScript
 - Puppeteer
+
+### Roadmap
+
+- Implement scraping of each membership page collected in the organization sheet

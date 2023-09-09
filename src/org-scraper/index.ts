@@ -7,7 +7,7 @@ import { JWT } from "google-auth-library";
 import { addRows, scrapeOperaMembershipData } from "./helpers";
 
 (async () => {
-  console.log("Scraping data...");
+  console.log("Scraping organizations...");
 
   const browser = await puppeteer.launch({ headless: "new" });
 
