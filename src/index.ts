@@ -11,20 +11,25 @@ import {
 } from "./helpers";
 
 (async () => {
-  const browser = await puppeteer.launch({ headless: false });
+  const browser = await puppeteer.launch({ headless: "new" });
 
   const url = process.env.URL;
 
   if (!url) throw new Error("URL not found");
 
-  const allMembershipTableDataCells = await scrapeOperaMembershipData(
-    browser,
-    url
-  );
+  const [allMembershipTableDataCells, membershipCategories] =
+    await scrapeOperaMembershipData(browser, url);
+
+  if (!allMembershipTableDataCells) {
+    throw new Error("allMembershipTableDataCells not found");
+  }
+
+  if (!membershipCategories) throw new Error("membershipCategories not found");
 
   await browser.close();
 
-  console.log(allMembershipTableDataCells);
+  console.log("Scraping data...");
+  console.log("\nScraping complete!");
 
   const serviceAccountAuth = new JWT({
     email: process.env.CLIENT_EMAIL,
@@ -39,7 +44,10 @@ import {
 
   await doc.loadInfo();
 
-  const rowsToBeAdded = mapDataCellsToRows(allMembershipTableDataCells);
+  const rowsToBeAdded = mapDataCellsToRows(
+    allMembershipTableDataCells,
+    membershipCategories
+  );
 
   await addRows(doc, rowsToBeAdded);
 })();
