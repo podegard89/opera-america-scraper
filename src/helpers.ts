@@ -48,21 +48,22 @@ export async function scrapeOperaMembershipData(
         await row.$$("div.directorytable__cell");
 
       const isHeaderRow =
-        (await evaluateAndCleanCell(imgCell)) === "COMPANY NAME";
+        (await evaluateAndCleanCell(companyCell)) === "COMPANY NAME";
 
       if (isHeaderRow) continue;
 
-      const url = await companyCell?.$eval(
-        "h6 > a.directorytable__preview",
-        (a) => a.href
-      );
+      const href = await imgCell?.evaluate((node) => {
+        const anchor = node.querySelector("a");
+
+        return anchor?.getAttribute("href");
+      });
 
       const rowObj = {
         companyName: await evaluateAndCleanCell(companyCell),
         city: await evaluateAndCleanCell(cityCell),
         state: await evaluateAndCleanCell(stateCell),
         budgetGroup: await evaluateAndCleanCell(budgetCell),
-        url: url?.trim(),
+        url: `https://www.operaamerica.org/${href?.trim()}`,
       };
 
       const validRow = RowDataSchema.parse(rowObj);
