@@ -4,11 +4,7 @@ dotenv.config();
 import puppeteer from "puppeteer";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
-import {
-  addRows,
-  mapDataCellsToRows,
-  scrapeOperaMembershipData,
-} from "./helpers";
+import { addRows, scrapeOperaMembershipData } from "./helpers";
 
 (async () => {
   console.log("Scraping data...");
@@ -19,10 +15,7 @@ import {
 
   if (!url) throw new Error("URL not found");
 
-  const allMembershipTableDataCells = await scrapeOperaMembershipData(
-    browser,
-    url
-  );
+  const allMembershipRows = await scrapeOperaMembershipData(browser, url);
 
   await browser.close();
 
@@ -39,9 +32,7 @@ import {
 
   await doc.loadInfo();
 
-  const rowsToBeAdded = mapDataCellsToRows(allMembershipTableDataCells);
-
-  await addRows(doc, rowsToBeAdded);
+  await addRows(doc, allMembershipRows);
 
   console.log("Data scraped and added to spreadsheet! 🎉");
 })();
