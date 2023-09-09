@@ -26,7 +26,7 @@ export async function addRows(
 export async function scrapeOperaMembershipData(
   browser: Browser,
   url: string
-): Promise<[string[], string[]]> {
+): Promise<string[]> {
   const dataCells: string[] = [];
 
   const membershipCategories: string[] = [];
@@ -46,19 +46,6 @@ export async function scrapeOperaMembershipData(
   if (isNaN(currentPage)) throw new Error("error parsing current page number");
 
   while (currentPage <= 11) {
-    const currentMembershipCategories = await page.$$eval(
-      "div.directorytable__type",
-      (categories) =>
-        categories.map((category) => {
-          const text = category.textContent;
-          if (!text) throw new Error("error parsing membership categories");
-          // if (membershipCategories.includes(text)) return "Duplicate";
-          return text;
-        })
-    );
-
-    membershipCategories.push(...currentMembershipCategories);
-
     const currentMembershipTableDataCells = await page.$$eval(
       "div.directorytable__cell",
       (cells) => {
@@ -72,22 +59,11 @@ export async function scrapeOperaMembershipData(
     currentPage++;
   }
 
-  const filteredCategories: string[] = [];
-
-  for (const category of membershipCategories) {
-    if (category && !filteredCategories.includes(category)) {
-      filteredCategories.push(category);
-    }
-  }
-
-  return [dataCells, filteredCategories];
+  return dataCells;
 }
 
-export function mapDataCellsToRows(dataCells: string[], categories: string[]) {
+export function mapDataCellsToRows(dataCells: string[]) {
   const rows: Row[] = [];
-
-  let categoryIndex = 0;
-  let lastCategoryUsed: string | undefined;
 
   // start at 1 to skip the initial image cell
   for (let i = 1; i < dataCells.length; i += 5) {
@@ -106,29 +82,7 @@ export function mapDataCellsToRows(dataCells: string[], categories: string[]) {
       validRow.state === "STATE" &&
       validRow.budgetGroup === "BUDGET GROUP";
 
-    console.log("\nRow is header: " + rowIsHeader);
-
-    const currentCat = categories[categoryIndex];
-
-    const categoryIsUsed = currentCat === lastCategoryUsed;
-    console.log("category is used: " + categoryIsUsed + "\n");
-
-    // it feels bad to use a nested conditional but I think in this case it is okay!
-    if (rowIsHeader) {
-      if (!categoryIsUsed) {
-        rows.push({ companyName: "", city: "", state: "", budgetGroup: "" });
-        rows.push({
-          companyName: currentCat || "",
-          city: "",
-          state: "",
-          budgetGroup: "",
-        });
-        rows.push(validRow);
-        lastCategoryUsed = currentCat;
-        categoryIndex++;
-      }
-      continue;
-    }
+    if (rowIsHeader) continue;
 
     rows.push(validRow);
   }
