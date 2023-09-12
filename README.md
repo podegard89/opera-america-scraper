@@ -23,7 +23,7 @@ This scraper operates in two main steps:
 
 ## Techstack
 
-- **TypeScript**
-- **Puppeteer**
-- **[google-spreadsheet]**(https://www.npmjs.com/package/google-spreadsheet)
-- **[google-auth-library]**(https://www.npmjs.com/package/google-auth-library)
+- TypeScript
+- Puppeteer
+- [google-spreadsheet](https://www.npmjs.com/package/google-spreadsheet)
+- [google-auth-library](https://www.npmjs.com/package/google-auth-library)
