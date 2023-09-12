@@ -5,7 +5,7 @@
   "main": "",
   "scripts": {
     "scrape-orgs": "ts-node src/org-scraper/index.ts",
-    "scrape-org-pages": "ts-node src/org-page-scaper/index.ts",
+    "scrape-org-pages": "ts-node src/org-page-scraper/index.ts",
     "lint": "eslint src/*.ts",
     "lint-fix": "eslint --fix src/*.ts"
   },

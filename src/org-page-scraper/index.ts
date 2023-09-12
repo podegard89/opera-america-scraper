@@ -4,20 +4,11 @@ dotenv.config();
 import puppeteer from "puppeteer";
 import { GoogleSpreadsheet } from "google-spreadsheet";
 import { JWT } from "google-auth-library";
-import { addRows, scrapeOrgPageData } from "./helpers";
+import { Row, addRows, scrapeOrgPageData } from "./helpers";
+import { fruitLoader, stopFruitLoader } from "../log-loader/index";
 
 (async () => {
-  console.log("Scraping organization page data...");
-
-  const browser = await puppeteer.launch({ headless: "new" });
-
-  const url = process.env.URL;
-
-  if (!url) throw new Error("URL not found");
-
-  const orgData = await scrapeOrgPageData(browser, url);
-
-  await browser.close();
+  const intervalID1 = fruitLoader("Getting organizations from spreadsheet");
 
   const serviceAccountAuth = new JWT({
     email: process.env.CLIENT_EMAIL,
@@ -32,7 +23,44 @@ import { addRows, scrapeOrgPageData } from "./helpers";
 
   await doc.loadInfo();
 
-  //   await addRows(doc, orgData, 2);
+  const orgSheet = doc.sheetsByIndex[0];
 
-  console.log("Data scraped and added to spreadsheet! 🎉");
+  if (!orgSheet) throw new Error("Sheet not found");
+
+  const allOrgs = await orgSheet.getRows();
+
+  const intervalID2 = fruitLoader(
+    "Scraping organization page data",
+    intervalID1
+  );
+
+  const browser = await puppeteer.launch({ headless: "new" });
+
+  const orgPageDataPromises = allOrgs.map((org) => {
+    const orgPageData = scrapeOrgPageData(
+      browser,
+      org.get("url"),
+      org.get("companyName")
+    );
+
+    return orgPageData;
+  });
+
+  const orgPageDataResults = await Promise.allSettled(orgPageDataPromises);
+
+  const successfulResults: Row[] = [];
+
+  for (const result of orgPageDataResults) {
+    if (result.status === "fulfilled") {
+      successfulResults.push(result.value);
+    } else {
+      console.error("Scraping failed for a URL:", result.reason);
+    }
+  }
+
+  await browser.close();
+
+  await addRows(doc, successfulResults, 1);
+
+  stopFruitLoader(intervalID2);
 })();
